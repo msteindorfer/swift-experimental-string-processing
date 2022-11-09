@@ -44,28 +44,39 @@ extension CaptureList {
   }
 }
 
+@available(macOS 11.0, *)
 extension CaptureList.Capture: Encodable {
   public func encode(to encoder: Encoder) throws {
     var container = encoder.container(keyedBy: CodingKeys.self)
     try container.encode(name, forKey: .name)
-    // try container.encode(type, forKey: .type) // TODO: how to serialize a `Type`?
+    try container.encode(_mangledTypeName(type), forKey: .type)
     try container.encode(optionalDepth, forKey: .optionalDepth)
     try container.encode(location, forKey: .location)
   }
 
   enum CodingKeys: String, CodingKey {
     case name                         // ✅ `Codable`
-    // case type                      // 🚫 TODO: how to serialize a `Type`?
+    case type                         // ✅ `Codable`
     case optionalDepth                // ✅ `Codable`
     case location                     // ✅ `Codable`
   }
 }
 
+@available(macOS 11.0, *)
 extension CaptureList.Capture: Decodable {
   public init(from decoder: Decoder) throws {
     let values = try decoder.container(keyedBy: CodingKeys.self)
     name = try values.decode(String?.self, forKey: .name)
-    type = Substring.self // Incorrect dummy value; // TODO: how to deserialize a `Type`?
+
+    let mangledTypeName = try values.decode(String.self, forKey: .name)
+    guard let typeByName = _typeByName(mangledTypeName) else {
+      throw DecodingError.dataCorruptedError(
+        forKey: .type,
+        in: values,
+        debugDescription: "Mangled type name \"\(mangledTypeName)\" does not resolve a type")
+    }
+    type = typeByName
+
     optionalDepth = try values.decode(Int.self, forKey: .optionalDepth)
     location = try values.decode(SourceLocation.self, forKey: .location)
   }

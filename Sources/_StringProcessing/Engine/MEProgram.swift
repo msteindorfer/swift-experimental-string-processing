@@ -76,7 +76,7 @@ extension MEProgram: Encodable {
     // case registerInfo              // ✅ `Codable`
     // case enableTracing             // ✅ `Codable`
     // case enableMetrics             // ✅ `Codable`
-    // case captureList               // 🧐 `Codable` (modulo a capture's `type`)
+    // case captureList               // ✅ `Codable`
     // case referencedCaptureOffsets  // ✅ `Codable`
     // case initialOptions            // ✅ `Codable`
   }
