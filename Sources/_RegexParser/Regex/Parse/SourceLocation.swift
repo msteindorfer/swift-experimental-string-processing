@@ -52,20 +52,23 @@ extension Source {
 }
 public typealias SourceLocation = Source.Location
 
-extension Source.Location: Encodable {
+// 🧐 `Codable` depends on deprecated property `encodedOffset`
+// TODO: move somewhere else; used for encoding `range: String.Index` property of `SourceLocation`
+extension String.Index: Codable {
   public func encode(to encoder: Encoder) throws {
-    var container = encoder.container(keyedBy: CodingKeys.self)
-    try container.encode("\(range)", forKey: .range)
-    try container.encode("\(start)", forKey: .start)
-    try container.encode("\(end)", forKey: .end)
+    var container = encoder.singleValueContainer()
+    try container.encode(self.encodedOffset)
   }
 
-  enum CodingKeys: String, CodingKey {
-    case range                        // 🧐 Hack: (partly) encoded as `String`
-    case start                        // 🧐 Hack: (partly) encoded as `String`
-    case end                          // 🧐 Hack: (partly) encoded as `String`
+  public init(from decoder: Decoder) throws {
+    let values = try decoder.singleValueContainer()
+    let encodedOffset = try values.decode(Int.self)
+
+    self = String.Index(encodedOffset: encodedOffset)
   }
 }
+
+extension Source.Location: Codable {}
 
 extension Source {
   var currentPosition: Position { bounds.lowerBound }

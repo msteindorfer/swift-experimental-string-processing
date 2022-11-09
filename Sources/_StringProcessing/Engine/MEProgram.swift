@@ -70,13 +70,13 @@ extension MEProgram: Encodable {
     // case staticElements            // ✅ `Codable`
     // case staticSequences           // ✅ `Codable`
     // case staticBitsets             // ✅ `Codable`
-    // case staticConsumeFunctions    // ⚡️ `Codable`
-    // case staticTransformFunctions  // ⚡️ `Codable`
-    // case staticMatcherFunctions    // ⚡️ `Codable`
+    // case staticConsumeFunctions    // ⚡️ code, not data
+    // case staticTransformFunctions  // ⚡️ code, not data
+    // case staticMatcherFunctions    // ⚡️ code, not data
     // case registerInfo              // ✅ `Codable`
     // case enableTracing             // ✅ `Codable`
     // case enableMetrics             // ✅ `Codable`
-    // case captureList               // 🧐 Hack: (partly) encoded as `String`
+    // case captureList               // 🧐 `Codable` (modulo a capture's `type`)
     // case referencedCaptureOffsets  // ✅ `Codable`
     // case initialOptions            // ✅ `Codable`
   }
