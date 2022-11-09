@@ -21,6 +21,8 @@ struct Instruction: RawRepresentable, Hashable {
   }
 }
 
+extension Instruction: Codable {}
+
 extension Instruction {
   enum OpCode: UInt64 {
     case invalid = 0

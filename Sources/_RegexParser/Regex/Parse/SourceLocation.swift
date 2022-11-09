@@ -52,6 +52,21 @@ extension Source {
 }
 public typealias SourceLocation = Source.Location
 
+extension Source.Location: Encodable {
+  public func encode(to encoder: Encoder) throws {
+    var container = encoder.container(keyedBy: CodingKeys.self)
+    try container.encode("\(range)", forKey: .range)
+    try container.encode("\(start)", forKey: .start)
+    try container.encode("\(end)", forKey: .end)
+  }
+
+  enum CodingKeys: String, CodingKey {
+    case range                        // 🧐 Hack: (partly) encoded as `String`
+    case start                        // 🧐 Hack: (partly) encoded as `String`
+    case end                          // 🧐 Hack: (partly) encoded as `String`
+  }
+}
+
 extension Source {
   var currentPosition: Position { bounds.lowerBound }
 }

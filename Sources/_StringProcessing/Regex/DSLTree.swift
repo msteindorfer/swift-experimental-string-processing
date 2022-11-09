@@ -459,6 +459,8 @@ public struct ReferenceID: Hashable {
   }
 }
 
+extension ReferenceID: Codable {}
+
 struct CaptureTransform: Hashable, CustomStringConvertible {
   enum Closure {
     /// A failable transform.

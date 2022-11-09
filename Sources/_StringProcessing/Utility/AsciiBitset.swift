@@ -97,3 +97,5 @@ extension DSLTree.CustomCharacterClass {
     }
   }
 }
+
+extension DSLTree.CustomCharacterClass.AsciiBitset: Codable {}

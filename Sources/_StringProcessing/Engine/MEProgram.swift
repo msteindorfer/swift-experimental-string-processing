@@ -63,3 +63,61 @@ extension MEProgram: CustomStringConvertible {
     return result
   }
 }
+
+extension MEProgram: Encodable {
+  enum CodingKeys: String, CodingKey {
+    case instructions                 // ✅ `Codable`
+    // case staticElements            // ✅ `Codable`
+    // case staticSequences           // ✅ `Codable`
+    // case staticBitsets             // ✅ `Codable`
+    // case staticConsumeFunctions    // ⚡️ `Codable`
+    // case staticTransformFunctions  // ⚡️ `Codable`
+    // case staticMatcherFunctions    // ⚡️ `Codable`
+    // case registerInfo              // ✅ `Codable`
+    // case enableTracing             // ✅ `Codable`
+    // case enableMetrics             // ✅ `Codable`
+    // case captureList               // 🧐 Hack: (partly) encoded as `String`
+    // case referencedCaptureOffsets  // ✅ `Codable`
+    // case initialOptions            // ✅ `Codable`
+  }
+}
+
+extension MEProgram: Decodable {
+  init(from decoder: Decoder) throws {
+    let values = try decoder.container(keyedBy: CodingKeys.self)
+    instructions = try values.decode(InstructionList<Instruction>.self, forKey: .instructions)
+
+    // FIXME: To be implemented ...
+    staticElements = []
+    staticSequences = []
+    staticBitsets = []
+    staticConsumeFunctions = []
+    staticTransformFunctions = []
+    staticMatcherFunctions = []
+    registerInfo = RegisterInfo()
+    enableTracing = false
+    enableMetrics = false
+    captureList = CaptureList()
+    referencedCaptureOffsets = [:]
+    initialOptions = MatchingOptions()
+  }
+}
+
+// TODO: move somewhere else; used for `staticElements` and `staticSequences`
+extension Character: Codable {
+  public init(from decoder: Decoder) throws {
+    let values = try decoder.singleValueContainer()
+    let string = try values.decode(String.self)
+
+    guard let character = string.first, string.count == 1 else {
+      throw DecodingError.dataCorruptedError(in: values, debugDescription: "Decoder expected a single character but found a string: \"\(string)\"")
+    }
+
+    self = character
+  }
+
+  public func encode(to encoder: Encoder) throws {
+    var container = encoder.singleValueContainer()
+    try container.encode(String(self))
+  }
+}

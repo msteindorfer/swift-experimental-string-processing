@@ -21,6 +21,8 @@ public struct CaptureList {
   }
 }
 
+extension CaptureList: Encodable {}
+
 extension CaptureList {
   public struct Capture {
     public var name: String?
@@ -39,6 +41,23 @@ extension CaptureList {
       self.optionalDepth = optionalDepth
       self.location = location
     }
+  }
+}
+
+extension CaptureList.Capture: Encodable {
+  public func encode(to encoder: Encoder) throws {
+    var container = encoder.container(keyedBy: CodingKeys.self)
+    try container.encode(name, forKey: .name)
+    try container.encode("\(type)", forKey: .type)
+    try container.encode(optionalDepth, forKey: .optionalDepth)
+    try container.encode(location, forKey: .location)
+  }
+
+  enum CodingKeys: String, CodingKey {
+    case name                         // ✅ `Codable`
+    case type                         // 🧐 Hack: (partly) encoded as `String`
+    case optionalDepth                // ✅ `Codable`
+    case location                     // 🧐 Hack: (partly) encoded as `String`
   }
 }
 

@@ -20,6 +20,8 @@ struct TypedIndex<C: Collection, 👻>: RawRepresentable where C.Index == Int {
   init(_ rawValue: C) { self.init(rawValue: rawValue) }
 }
 
+extension TypedIndex: Codable where C: Codable {}
+
 extension TypedIndex: Collection {
   typealias Index = TypedInt<👻>
   typealias Element = C.Element

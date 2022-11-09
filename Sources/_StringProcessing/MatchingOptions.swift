@@ -28,6 +28,8 @@ struct MatchingOptions {
   }
 }
 
+extension MatchingOptions: Codable {}
+
 // MARK: Compilation API
 extension MatchingOptions {
   /// Creates an instance with the default options.
@@ -262,6 +264,8 @@ extension MatchingOptions {
     }
   }
 }
+
+extension MatchingOptions.Representation: Codable {}
 
 extension MatchingOptions.Representation {
   fileprivate init(_ kind: MatchingOptions.Option) {
