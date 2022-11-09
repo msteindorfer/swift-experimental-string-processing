@@ -67,39 +67,37 @@ extension MEProgram: CustomStringConvertible {
 extension MEProgram: Encodable {
   enum CodingKeys: String, CodingKey {
     case instructions                 // ✅ `Codable`
-    // case staticElements            // ✅ `Codable`
-    // case staticSequences           // ✅ `Codable`
-    // case staticBitsets             // ✅ `Codable`
+    case staticElements               // ✅ `Codable`
+    case staticSequences              // ✅ `Codable`
+    case staticBitsets                // ✅ `Codable`
     // case staticConsumeFunctions    // ⚡️ code, not data
     // case staticTransformFunctions  // ⚡️ code, not data
     // case staticMatcherFunctions    // ⚡️ code, not data
-    // case registerInfo              // ✅ `Codable`
-    // case enableTracing             // ✅ `Codable`
-    // case enableMetrics             // ✅ `Codable`
-    // case captureList               // ✅ `Codable`
-    // case referencedCaptureOffsets  // ✅ `Codable`
-    // case initialOptions            // ✅ `Codable`
+    case registerInfo                 // ✅ `Codable`
+    case enableTracing                // ✅ `Codable`
+    case enableMetrics                // ✅ `Codable`
+    case captureList                  // ✅ `Codable`
+    case referencedCaptureOffsets     // ✅ `Codable`
+    case initialOptions               // ✅ `Codable`
   }
 }
 
 extension MEProgram: Decodable {
   init(from decoder: Decoder) throws {
     let values = try decoder.container(keyedBy: CodingKeys.self)
-    instructions = try values.decode(InstructionList<Instruction>.self, forKey: .instructions)
-
-    // FIXME: To be implemented ...
-    staticElements = []
-    staticSequences = []
-    staticBitsets = []
-    staticConsumeFunctions = []
-    staticTransformFunctions = []
-    staticMatcherFunctions = []
-    registerInfo = RegisterInfo()
-    enableTracing = false
-    enableMetrics = false
-    captureList = CaptureList()
-    referencedCaptureOffsets = [:]
-    initialOptions = MatchingOptions()
+    instructions = try values.decode(type(of: instructions), forKey: .instructions)
+    staticElements = try values.decode(type(of: staticElements), forKey: .staticElements)
+    staticSequences = try values.decode(type(of: staticSequences), forKey: .staticSequences)
+    staticBitsets = try values.decode(type(of: staticBitsets), forKey: .staticBitsets)
+    staticConsumeFunctions = [] // FIXME: how to deal functions?
+    staticTransformFunctions = [] // FIXME: how to deal functions?
+    staticMatcherFunctions = [] // FIXME: how to deal functions?
+    registerInfo = try values.decode(type(of: registerInfo), forKey: .registerInfo)
+    enableTracing = try values.decode(type(of: enableTracing), forKey: .enableTracing)
+    enableMetrics = try values.decode(type(of: enableMetrics), forKey: .enableMetrics)
+    captureList = try values.decode(type(of: captureList), forKey: .captureList)
+    referencedCaptureOffsets = try values.decode(type(of: referencedCaptureOffsets), forKey: .referencedCaptureOffsets)
+    initialOptions = try values.decode(type(of: initialOptions), forKey: .initialOptions)
   }
 }
 
