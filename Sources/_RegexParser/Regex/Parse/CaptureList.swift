@@ -48,7 +48,7 @@ extension CaptureList {
 extension CaptureList.Capture: Encodable {
   public func encode(to encoder: Encoder) throws {
     var container = encoder.container(keyedBy: CodingKeys.self)
-    try container.encode(name, forKey: .name)
+    try container.encodeIfPresent(name, forKey: .name)
     try container.encode(_mangledTypeName(type), forKey: .type)
     try container.encode(optionalDepth, forKey: .optionalDepth)
     try container.encode(location, forKey: .location)
@@ -66,9 +66,9 @@ extension CaptureList.Capture: Encodable {
 extension CaptureList.Capture: Decodable {
   public init(from decoder: Decoder) throws {
     let values = try decoder.container(keyedBy: CodingKeys.self)
-    name = try values.decode(String?.self, forKey: .name)
+    name = try values.decodeIfPresent(String.self, forKey: .name)
 
-    let mangledTypeName = try values.decode(String.self, forKey: .name)
+    let mangledTypeName = try values.decode(String.self, forKey: .type)
     guard let typeByName = _typeByName(mangledTypeName) else {
       throw DecodingError.dataCorruptedError(
         forKey: .type,
