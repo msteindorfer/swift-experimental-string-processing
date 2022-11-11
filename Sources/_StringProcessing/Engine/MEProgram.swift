@@ -89,15 +89,30 @@ extension MEProgram: Decodable {
     staticElements = try values.decode(type(of: staticElements), forKey: .staticElements)
     staticSequences = try values.decode(type(of: staticSequences), forKey: .staticSequences)
     staticBitsets = try values.decode(type(of: staticBitsets), forKey: .staticBitsets)
-    staticConsumeFunctions = [] // FIXME: how to deal functions?
-    staticTransformFunctions = [] // FIXME: how to deal functions?
-    staticMatcherFunctions = [] // FIXME: how to deal functions?
-    registerInfo = try values.decode(type(of: registerInfo), forKey: .registerInfo)
+    let __registerInfo = try values.decode(type(of: registerInfo), forKey: .registerInfo)
+    registerInfo = __registerInfo
     enableTracing = try values.decode(type(of: enableTracing), forKey: .enableTracing)
     enableMetrics = try values.decode(type(of: enableMetrics), forKey: .enableMetrics)
     captureList = try values.decode(type(of: captureList), forKey: .captureList)
     referencedCaptureOffsets = try values.decode(type(of: referencedCaptureOffsets), forKey: .referencedCaptureOffsets)
     initialOptions = try values.decode(type(of: initialOptions), forKey: .initialOptions)
+
+    // FIXME: how to inject functions after deserialization?
+
+    // Emit placeholders throwing fatal error
+    staticConsumeFunctions = (0 ..< __registerInfo.consumeFunctions).map { _ in
+      { _, _ in fatalError("Consume function not initialized") }
+    }
+
+    // Emit placeholders throwing fatal error
+    staticTransformFunctions = (0 ..< __registerInfo.transformFunctions).map { _ in
+      { _, _ in fatalError("Transform function not initialized") }
+    }
+
+    // Emit placeholders throwing fatal error
+    staticMatcherFunctions = (0 ..< __registerInfo.matcherFunctions).map { _ in
+      { _, _, _ in fatalError("Matcher function not initialized") }
+    }
   }
 }
 
