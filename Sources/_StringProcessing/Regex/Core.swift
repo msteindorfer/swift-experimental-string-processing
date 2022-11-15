@@ -92,6 +92,11 @@ public struct Regex<Output>: RegexComponent {
         .init(ast, globalOptions: nil, diags: Diagnostics()))
   }
 
+  // Initialize (lowered) program from byte buffer
+  public init(data: [UInt8]) {
+    self.program = Program(data: data)
+  }
+
   // Compiler interface. Do not change independently.
   @usableFromInline
   init(_regexString pattern: String) {
@@ -190,6 +195,19 @@ extension Regex {
 
     init(tree: DSLTree) {
       self.tree = tree
+    }
+
+    // Initialize (lowered) program from byte buffer
+    init(data: [UInt8]) {
+      // Set a dummy DSL node (we just use the deserialized lowered program)
+      self.tree = DSLTree(.empty)
+
+      let decoder = XJSONDecoder()
+      let compiledProgram = try! decoder.decode(MEProgram.self, from: data)
+
+      _stdlib_atomicInitializeARCRef(
+        object: &_loweredProgramStorage,
+        desired: ProgramBox(compiledProgram))
     }
   }
   
