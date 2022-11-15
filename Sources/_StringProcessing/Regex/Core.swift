@@ -152,14 +152,27 @@ extension Regex {
           else { return nil }
         return unsafeDowncast(loweredObject, to: ProgramBox.self).value
       }
-      
+
+      // Encode and decode program for experimentation. In case the
+      // `program` is not encodable, the argument is returned unmodified.
+      func roundtripEncodeDecode(_ program: MEProgram) -> MEProgram {
+        do {
+          let encoder = XJSONEncoder()
+          let data = try encoder.encode(program)
+          let decoder = XJSONDecoder()
+          return try decoder.decode(MEProgram.self, from: data)
+        } catch {
+          return program
+        }
+      }
+
       // Use the previously compiled program, if available.
       if let program = loadProgram() {
         return program
       }
       
       // Compile the DSLTree into a lowered program and store it atomically.
-      let compiledProgram = try! Compiler(tree: tree, compileOptions: compileOptions).emit()
+      let compiledProgram = roundtripEncodeDecode(try! Compiler(tree: tree, compileOptions: compileOptions).emit())
       let storedNewProgram = _stdlib_atomicInitializeARCRef(
         object: &_loweredProgramStorage,
         desired: ProgramBox(compiledProgram))
