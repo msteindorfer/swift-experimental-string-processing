@@ -40,6 +40,19 @@ add_library(_StringProcessing
   Engine/Registers.swift
   Engine/Structuralize.swift
   Engine/Tracing.swift
+  ExtrasJSON/JSONValue.swift
+  ExtrasJSON/JSONError+DecodingError.swift
+  ExtrasJSON/ArrayKey.swift
+  ExtrasJSON/Encoding/JSONEncoder.swift
+  ExtrasJSON/Encoding/JSONSingleValueEncodingContainer.swift
+  ExtrasJSON/Encoding/JSONKeyedEncodingContainer.swift
+  ExtrasJSON/Encoding/JSONUnkeyedEncodingContainer.swift
+  ExtrasJSON/Decoding/JSONUnkeyedDecodingContainer.swift
+  ExtrasJSON/Decoding/JSONDecoder.swift
+  ExtrasJSON/Decoding/JSONKeyedDecodingContainer.swift
+  ExtrasJSON/Decoding/JSONSingleValueDecodingContainer.swift
+  ExtrasJSON/Parsing/DocumentReader.swift
+  ExtrasJSON/Parsing/JSONParser.swift
   Regex/AnyRegexOutput.swift
   Regex/ASTConversion.swift
   Regex/Core.swift
