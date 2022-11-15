@@ -65,20 +65,55 @@ extension MEProgram: CustomStringConvertible {
 }
 
 extension MEProgram: Encodable {
+  public func encode(to encoder: Encoder) throws {
+    var container = encoder.container(keyedBy: CodingKeys.self)
+    try container.encode(instructions, forKey: .instructions)
+    try container.encode(staticElements, forKey: .staticElements)
+    try container.encode(staticSequences, forKey: .staticSequences)
+    try container.encode(staticBitsets, forKey: .staticBitsets)
+    try container.encode(registerInfo, forKey: .registerInfo)
+    try container.encode(enableTracing, forKey: .enableTracing)
+    try container.encode(enableMetrics, forKey: .enableMetrics)
+    try container.encode(captureList, forKey: .captureList)
+    try container.encode(referencedCaptureOffsets, forKey: .referencedCaptureOffsets)
+    try container.encode(initialOptions, forKey: .initialOptions)
+
+    if !staticConsumeFunctions.isEmpty {
+      throw EncodingError.invalidValue(staticConsumeFunctions, EncodingError.Context(
+        codingPath: [AdditionalInfoKeys.staticConsumeFunctions],
+        debugDescription: "Consume functions cannot be encoded"))
+    }
+
+    if !staticTransformFunctions.isEmpty {
+      throw EncodingError.invalidValue(staticTransformFunctions, EncodingError.Context(
+        codingPath: [AdditionalInfoKeys.staticTransformFunctions],
+        debugDescription: "Transform functions cannot be encoded"))
+    }
+
+    if !staticMatcherFunctions.isEmpty {
+      throw EncodingError.invalidValue(staticMatcherFunctions, EncodingError.Context(
+        codingPath: [AdditionalInfoKeys.staticMatcherFunctions],
+        debugDescription: "Matcher functions cannot be encoded"))
+    }
+  }
+
   enum CodingKeys: String, CodingKey {
     case instructions                 // ✅ `Codable`
     case staticElements               // ✅ `Codable`
     case staticSequences              // ✅ `Codable`
     case staticBitsets                // ✅ `Codable`
-    // case staticConsumeFunctions    // ⚡️ code, not data
-    // case staticTransformFunctions  // ⚡️ code, not data
-    // case staticMatcherFunctions    // ⚡️ code, not data
     case registerInfo                 // ✅ `Codable`
     case enableTracing                // ✅ `Codable`
     case enableMetrics                // ✅ `Codable`
     case captureList                  // ✅ `Codable`
     case referencedCaptureOffsets     // ✅ `Codable`
     case initialOptions               // ✅ `Codable`
+  }
+
+  enum AdditionalInfoKeys: String, CodingKey {
+    case staticConsumeFunctions       // ⚡️ code, not data
+    case staticTransformFunctions     // ⚡️ code, not data
+    case staticMatcherFunctions       // ⚡️ code, not data
   }
 }
 
