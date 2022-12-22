@@ -162,6 +162,9 @@ extension MEProgram {
     var positionStackAddresses = 0
     var savePointAddresses = 0
     var captures = 0
+
+    // EXPERIMENAL
+    static let onlyOneGlobalCapture = RegisterInfo(captures: 1)
   }
 }
 

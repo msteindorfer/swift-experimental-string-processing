@@ -97,6 +97,11 @@ public struct Regex<Output>: RegexComponent {
     self.program = Program(data: data)
   }
 
+  // Initialize (lowered) program from instruction byte buffer
+  public init(instructions: [UInt8]) {
+    self.program = Program(instructions: instructions)
+  }
+
   // Compiler interface. Do not change independently.
   @usableFromInline
   init(_regexString pattern: String) {
@@ -204,6 +209,37 @@ extension Regex {
 
       let decoder = XJSONDecoder()
       let compiledProgram = try! decoder.decode(MEProgram.self, from: data)
+
+      _stdlib_atomicInitializeARCRef(
+        object: &_loweredProgramStorage,
+        desired: ProgramBox(compiledProgram))
+    }
+
+    // Initialize (lowered) program from byte buffer
+    init(instructions: [UInt8]) {
+      // Set a dummy DSL node (we just use the deserialized lowered program)
+      self.tree = DSLTree(.empty)
+
+      let instructions = instructions.withUnsafeBufferPointer {
+        $0.withMemoryRebound(to: UInt64.self) {
+          $0.map { Instruction(rawValue: $0) }
+        }
+      }
+
+      let compiledProgram = MEProgram(
+        instructions: InstructionList(rawValue: instructions),
+        staticElements: [],
+        staticSequences: [],
+        staticBitsets: [],
+        staticConsumeFunctions: [],
+        staticTransformFunctions: [],
+        staticMatcherFunctions: [],
+        registerInfo: .onlyOneGlobalCapture,
+        enableTracing: false,
+        enableMetrics: false,
+        captureList: .onlyOneGlobalCapture,
+        referencedCaptureOffsets: [:],
+        initialOptions: MatchingOptions())
 
       _stdlib_atomicInitializeARCRef(
         object: &_loweredProgramStorage,

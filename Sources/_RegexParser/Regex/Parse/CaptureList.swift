@@ -19,6 +19,9 @@ public struct CaptureList {
   public mutating func append(_ c: Capture) {
     captures.append(c)
   }
+
+  // EXPERIMENAL
+  public static let onlyOneGlobalCapture = CaptureList(arrayLiteral: CaptureList.Capture(optionalDepth: 0, .fake))
 }
 
 extension CaptureList: Codable {}
