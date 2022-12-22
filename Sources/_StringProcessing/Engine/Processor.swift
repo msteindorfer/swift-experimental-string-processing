@@ -111,7 +111,7 @@ extension Processor {
     shouldMeasureMetrics: Bool
   ) {
     self.controller = Controller(pc: 0)
-    self.instructions = program.instructions
+    self.instructions = program.instructions /* read `MEProgram.instructions` */
     self.input = input
     self.subjectBounds = subjectBounds
     self.searchBounds = searchBounds
@@ -123,7 +123,7 @@ extension Processor {
     // Initialize registers with end of search bounds
     self.registers = Registers(program, searchBounds.upperBound)
     self.storedCaptures = Array(
-       repeating: .init(), count: program.registerInfo.captures)
+       repeating: .init(), count: program.registerInfo.captures) /* read `MEProgram.registerInfo.captures */
 
     _checkInvariants()
   }

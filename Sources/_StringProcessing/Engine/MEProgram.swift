@@ -67,6 +67,7 @@ extension MEProgram: CustomStringConvertible {
 extension MEProgram: Encodable {
   public func encode(to encoder: Encoder) throws {
     var container = encoder.container(keyedBy: CodingKeys.self)
+    // TODO: prefer `instructions.rawValue` instead of phantom type wrapper
     try container.encode(instructions, forKey: .instructions)
     try container.encode(staticElements, forKey: .staticElements)
     try container.encode(staticSequences, forKey: .staticSequences)
@@ -120,6 +121,7 @@ extension MEProgram: Encodable {
 extension MEProgram: Decodable {
   init(from decoder: Decoder) throws {
     let values = try decoder.container(keyedBy: CodingKeys.self)
+    // TODO: prefer `instructions.rawValue` instead of phantom type wrapper
     instructions = try values.decode(type(of: instructions), forKey: .instructions)
     staticElements = try values.decode(type(of: staticElements), forKey: .staticElements)
     staticSequences = try values.decode(type(of: staticSequences), forKey: .staticSequences)

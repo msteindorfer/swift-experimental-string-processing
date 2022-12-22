@@ -376,16 +376,19 @@ extension MEProgram.Builder {
     }
 
     var regInfo = MEProgram.RegisterInfo()
-    regInfo.elements = elements.count
-    regInfo.sequences = sequences.count
+    // Registers
     regInfo.ints = nextIntRegister.rawValue
+    regInfo.captures = nextCaptureRegister.rawValue
     regInfo.values = nextValueRegister.rawValue
     regInfo.positions = nextPositionRegister.rawValue
-    regInfo.bitsets = asciiBitsets.count
+    // Counts (Static)
+    regInfo.elements = elements.count                     // must equal `program.staticElements.count`
+    regInfo.sequences = sequences.count                   // must equal `program.staticSequences.count`
+    regInfo.bitsets = asciiBitsets.count                  // must equal `program.staticBitsets.count`
+    // Counts (Dynamic)
     regInfo.consumeFunctions = consumeFunctions.count
     regInfo.transformFunctions = transformFunctions.count
     regInfo.matcherFunctions = matcherFunctions.count
-    regInfo.captures = nextCaptureRegister.rawValue
 
     return MEProgram(
       instructions: InstructionList(instructions),
