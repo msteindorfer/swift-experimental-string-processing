@@ -77,6 +77,26 @@ extension AST {
   }
 }
 
+//extension AST.Group.Kind: Encodable {
+//  enum CodingKeys: String, CodingKey {
+//    case capture
+////    case namedCapture
+////    case balancedCapture
+//    case nonCapture
+//    case nonCaptureReset
+//    case atomicNonCapturing
+//    case lookahead
+//    case negativeLookahead
+//    case nonAtomicLookahead
+//    case lookbehind
+//    case negativeLookbehind
+//    case nonAtomicLookbehind
+//    case scriptRun
+//    case atomicScriptRun
+////    case changeMatchingOptions
+//  }
+//}
+
 extension AST.Group.Kind {
   /// Whether the group is a capturing group.
   public var isCapturing: Bool {

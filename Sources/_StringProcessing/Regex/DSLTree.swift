@@ -20,6 +20,8 @@ public struct DSLTree {
   }
 }
 
+extension DSLTree: Encodable {}
+
 extension DSLTree {
   indirect enum Node {
     /// Matches each node in order.
@@ -91,6 +93,34 @@ extension DSLTree {
 
     // TODO: Would this just boil down to a consumer?
     case characterPredicate(_CharacterPredicateInterface)
+  }
+}
+
+extension DSLTree.Node: Encodable {
+  enum CodingKeys: String, CodingKey {
+    case orderedChoice
+    case concatenation
+//    case capture
+    case nonCapturingGroup
+    case conditional
+    case quantification
+    case customCharacterClass
+    case atom
+    case trivia
+    case empty
+    case quotedLiteral
+    case absentFunction
+    case convertedRegexLiteral
+//    case consumer
+//    case matcher
+//    case characterPredicate
+  }
+
+  enum AdditionalInfoKeys: String, CodingKey {
+    case capture                // ⚡️ code, not data
+    case consumer               // ⚡️ code, not data
+    case matcher                // ⚡️ code, not data
+    case characterPredicate     // ⚡️ code, not data
   }
 }
 
@@ -188,6 +218,42 @@ extension DSLTree {
   }
 }
 
+extension DSLTree.QuantificationKind: Encodable {}
+
+extension DSLTree.CustomCharacterClass: Encodable {}
+
+extension DSLTree.CustomCharacterClass.Member: Encodable {}
+
+extension DSLTree.Atom: Encodable {
+//  enum CodingKeys: String, CodingKey {
+//    case char
+//    case scalar
+//    case any
+//    case anyNonNewline
+//    case dot
+//    case characterClass
+//    case assertion
+//    case backreference
+//    case symbolicReference
+//    case changeMatchingOptions
+//    case unconverted
+//  }
+}
+
+extension Unicode.Scalar: Codable {
+  public func encode(to encoder: Encoder) throws {
+    var container = encoder.singleValueContainer()
+    try container.encode(self.value)
+  }
+
+  public init(from decoder: Decoder) throws {
+    let values = try decoder.singleValueContainer()
+    let value = try values.decode(UInt32.self)
+
+    self = Unicode.Scalar(_value: value)
+  }
+}
+
 extension DSLTree.Atom {
   @_spi(RegexBuilder)
   public enum Assertion: UInt64, Hashable {
@@ -251,6 +317,10 @@ extension DSLTree.Atom {
     case anyUnicodeScalar
   }
 }
+
+extension DSLTree.Atom.Assertion: Encodable {}
+
+extension DSLTree.Atom.CharacterClass: Encodable {}
 
 extension DSLTree.Atom.CharacterClass {
   @_spi(RegexBuilder)
@@ -401,6 +471,8 @@ extension DSLTree {
     // TBD
   }
 }
+
+extension DSLTree.Options: Encodable {}
 
 extension DSLTree {
   var hasCapture: Bool {
@@ -571,6 +643,60 @@ struct CaptureTransform: Hashable, CustomStringConvertible {
     "<transform argument_type=\(argumentType) result_type=\(resultType)>"
   }
 }
+
+//@available(macOS 11.0, *)
+//extension CaptureTransform: Encodable {
+//  public func encode(to encoder: Encoder) throws {
+//    var container = encoder.container(keyedBy: CodingKeys.self)
+//    try container.encode(_mangledTypeName(argumentType), forKey: .argumentType)
+//    try container.encode(_mangledTypeName(resultType), forKey: .resultType)
+//  }
+//
+//  enum CodingKeys: String, CodingKey {
+//    case argumentType
+//    case resultType
+//  }
+//
+//  enum AdditionalInfoKeys: String, CodingKey {
+//    case closure                // ⚡️ code, not data
+//  }
+//}
+
+//@available(macOS 11.0, *)
+//extension CaptureTransform: Decodable {
+//  public init(from decoder: Decoder) throws {
+//    let values = try decoder.container(keyedBy: CodingKeys.self)
+//
+//    let mangledArgumentTypeName = try values.decode(String.self, forKey: .argumentType)
+//    guard let typeByName = _typeByName(mangledArgumentTypeName) else {
+//      throw DecodingError.dataCorruptedError(
+//        forKey: .argumentType,
+//        in: values,
+//        debugDescription: "Mangled type name \"\(mangledArgumentTypeName)\" does not resolve a type")
+//    }
+//    argumentType = typeByName
+//
+//    let mangledResultTypeName = try values.decode(String.self, forKey: .resultType)
+//    guard let typeByName = _typeByName(mangledResultTypeName) else {
+//      throw DecodingError.dataCorruptedError(
+//        forKey: .resultType,
+//        in: values,
+//        debugDescription: "Mangled type name \"\(mangledResultTypeName)\" does not resolve a type")
+//    }
+//    resultType = typeByName
+//
+//    closure = _ // TODO: not partially deserializable
+//  }
+//}
+
+//extension CaptureTransform.Closure: Encodable {
+//  enum AdditionalInfoKeys: String, CodingKey {
+//    case failable               // ⚡️ code, not data
+//    case substringFailable      // ⚡️ code, not data
+//    case nonfailable            // ⚡️ code, not data
+//    case substringNonfailable   // ⚡️ code, not data
+//  }
+//}
 
 extension CaptureList.Builder {
   mutating func addCaptures(
@@ -814,6 +940,44 @@ extension DSLTree {
       internal var ast: AST.Atom
     }
   }
+}
+
+extension DSLTree._Tree: Encodable {}
+
+extension DSLTree._AST.GroupKind: Encodable {
+  public func encode(to encoder: Encoder) throws { /* TODO */ }
+}
+
+extension DSLTree._AST.ConditionKind: Encodable {
+  public func encode(to encoder: Encoder) throws { /* TODO */ }
+}
+
+extension DSLTree._AST.QuantificationKind: Encodable {
+  public func encode(to encoder: Encoder) throws { /* TODO */ }
+}
+
+extension DSLTree._AST.QuantificationAmount: Encodable {
+  public func encode(to encoder: Encoder) throws { /* TODO */ }
+}
+
+extension DSLTree._AST.ASTNode: Encodable {
+  public func encode(to encoder: Encoder) throws { /* TODO */ }
+}
+
+extension DSLTree._AST.AbsentFunction: Encodable {
+  public func encode(to encoder: Encoder) throws { /* TODO */ }
+}
+
+extension DSLTree._AST.Reference: Encodable {
+  public func encode(to encoder: Encoder) throws { /* TODO */ }
+}
+
+extension DSLTree._AST.MatchingOptionSequence: Encodable {
+  public func encode(to encoder: Encoder) throws { /* TODO */ }
+}
+
+extension DSLTree._AST.Atom: Encodable {
+  public func encode(to encoder: Encoder) throws { /* TODO */ }
 }
 
 extension DSLTree.Atom {
