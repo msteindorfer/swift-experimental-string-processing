@@ -207,6 +207,48 @@ class AlgorithmsResultBuilderTests: XCTestCase {
     XCTAssertEqual("abc".suffix(1).firstMatch(of: regex)!.0, "c")
   }
 
+  // TODO: how to apply a transformer to the whole match?
+  // TODO: how to best optimize closures (e.g., transformers) at compile-time to avoid dynamic type checking and casting at runtime?
+  func testMatchesOneOrMoreWordFromInstructionsAndTransformer() throws {
+
+    // MARK: Regex DSL
+
+    let _ = Regex {
+      TryCapture {
+        OneOrMore(.word)
+      } transform: {
+        $0.uppercased()
+      }
+    }
+
+    let _ = Regex {
+      TryCapture(OneOrMore(.word), transform: {
+        $0.uppercased()
+      })
+    }
+
+    // MARK: Embedded Low-Level Matching Engine IR
+
+    let regex = Regex<(Substring, String)>(instructions: [
+      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x15, // > [0] beginCapture 0
+      0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x15, // > [1] beginCapture 1
+      0x08, 0x00, 0x04, 0x08, 0x20, 0x00, 0x00, 0x14, // > [2] quantify builtin 1 unbounded
+      0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x16, // > [3] endCapture 1
+      0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x17, // > [4] transformCapture trans[#0](#1)
+      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x16, // > [5] endCapture 0
+      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x1a, // > [6] accept
+    ], transformers: [
+      { input in input.uppercased() }
+    ])
+
+    XCTAssertEqual("abc".wholeMatch(of: regex)!.1, "ABC")
+    XCTAssertEqual("abc".prefixMatch(of: regex)!.1, "ABC")
+    XCTAssertEqual("abc".firstMatch(of: regex)!.1, "ABC")
+    XCTAssertEqual("abc".suffix(1).wholeMatch(of: regex)!.1, "C")
+    XCTAssertEqual("abc".suffix(1).prefixMatch(of: regex)!.1, "C")
+    XCTAssertEqual("abc".suffix(1).firstMatch(of: regex)!.1, "C")
+  }
+
   func testMatchesOneOrMoreAny() throws {
     do {
       let regex = Regex { OneOrMore(.any) }

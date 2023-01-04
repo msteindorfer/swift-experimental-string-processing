@@ -98,8 +98,9 @@ public struct Regex<Output>: RegexComponent {
   }
 
   // Initialize (lowered) program from instruction byte buffer
-  public init(instructions: [UInt8]) {
-    self.program = Program(instructions: instructions)
+  // TODO: support generalized transform functions
+  public init(instructions: [UInt8], transformers: [(Substring) throws -> String] = []) {
+    self.program = Program(instructions: instructions, transformers: transformers)
   }
 
   // Compiler interface. Do not change independently.
@@ -216,7 +217,8 @@ extension Regex {
     }
 
     // Initialize (lowered) program from byte buffer
-    init(instructions: [UInt8]) {
+    // TODO: support generalized transform functions
+    init(instructions: [UInt8], transformers: [(Substring) throws -> String] = []) {
       // Set a dummy DSL node (we just use the deserialized lowered program)
       self.tree = DSLTree(.empty)
 
@@ -226,18 +228,51 @@ extension Regex {
         }
       }
 
+      let transformFunctions: [MEProgram.TransformFunction] = transformers.map { transform in
+        return {
+          input, cap in
+          // If it's a substring capture with no custom value, apply the
+          // transform directly to the substring to avoid existential traffic.
+          //
+          // FIXME: separate out this code path. This is fragile,
+          // slow, and these are clearly different constructs
+          if let range = cap.range, cap.value == nil {
+            return try transform(input[range])
+          }
+
+//          let value = constructExistentialOutputComponent(
+//            from: input,
+//            component: cap.deconstructed,
+//            optionalCount: 0)
+//          return try transform(value)
+
+          fatalError("Not yet implemented.")
+        }
+      }
+
+      // MARK: verify and recover information from byte-code
+      // TODO: complete implementation
+
+      let captureCount = instructions.filter { $0.opcode == .beginCapture }.count
+
+      var registerInfo: MEProgram.RegisterInfo = MEProgram.RegisterInfo()
+      registerInfo.captures = captureCount
+      registerInfo.transformFunctions = transformFunctions.count
+
+      let captures = Array(repeating: CaptureList.Capture(optionalDepth: 0, .fake), count: captureCount)
+
       let compiledProgram = MEProgram(
         instructions: InstructionList(rawValue: instructions),
         staticElements: [],
         staticSequences: [],
         staticBitsets: [],
         staticConsumeFunctions: [],
-        staticTransformFunctions: [],
+        staticTransformFunctions: transformFunctions,
         staticMatcherFunctions: [],
-        registerInfo: .onlyOneGlobalCapture,
+        registerInfo: registerInfo,
         enableTracing: false,
         enableMetrics: false,
-        captureList: .onlyOneGlobalCapture,
+        captureList: CaptureList(captures),
         referencedCaptureOffsets: [:],
         initialOptions: MatchingOptions())
 
