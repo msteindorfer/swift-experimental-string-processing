@@ -99,7 +99,23 @@ public struct Regex<Output>: RegexComponent {
 
   // Initialize (lowered) program from instruction byte buffer
   // TODO: support generalized transform functions
+  // TODO: add instruction verifier
   public init(instructions: [UInt8], transformers: [(Substring) throws -> String] = []) {
+    assert(instructions.count % 8 == 0)
+
+    let instructions = instructions.withUnsafeBufferPointer { buffer in
+      buffer.withMemoryRebound(to: UInt64.self) { buffer in
+        Array(buffer)
+      }
+    }
+
+    self.program = Program(instructions: instructions, transformers: transformers)
+  }
+
+  // Initialize (lowered) program from instruction byte buffer
+  // TODO: support generalized transform functions
+  // TODO: add instruction verifier
+  public init(instructions: [UInt64], transformers: [(Substring) throws -> String] = []) {
     self.program = Program(instructions: instructions, transformers: transformers)
   }
 
@@ -218,15 +234,11 @@ extension Regex {
 
     // Initialize (lowered) program from byte buffer
     // TODO: support generalized transform functions
-    init(instructions: [UInt8], transformers: [(Substring) throws -> String] = []) {
+    public init(instructions: [UInt64], transformers: [(Substring) throws -> String] = []) {
       // Set a dummy DSL node (we just use the deserialized lowered program)
       self.tree = DSLTree(.empty)
 
-      let instructions = instructions.withUnsafeBufferPointer {
-        $0.withMemoryRebound(to: UInt64.self) {
-          $0.map { Instruction(rawValue: $0) }
-        }
-      }
+      let instructions = instructions.map { Instruction(rawValue: $0) }
 
       let transformFunctions: [MEProgram.TransformFunction] = transformers.map { transform in
         return {
@@ -303,6 +315,40 @@ extension Regex {
 
   init(node: DSLTree.Node) {
     self.program = Program(tree: .init(node))
+  }
+}
+
+@available(SwiftStdlib 5.7, *)
+extension Regex {
+  public func encodeLoweredProgram() throws -> [UInt8] {
+    let encoder = XJSONEncoder()
+    let data = try encoder.encode(self.program.loweredProgram)
+    return data
+  }
+
+  public func encodeLoweredProgramInstructions() throws -> [UInt8] {
+    let instructions: [UInt64] = self.program.loweredProgram.instructions.map { $0.rawValue }
+    return instructions.withUnsafeBytes { buffer in Array(buffer) }
+  }
+
+  public func encodeLoweredProgramInstructions() throws -> [UInt64] {
+    self.program.loweredProgram.instructions.map { $0.rawValue }
+  }
+
+  public func encodeLoweredProgramInstructions() throws -> [String] {
+    let instructionList = self.program.loweredProgram.instructions
+
+    // TODO: extract formatting and unify with `MEProgram.description`
+    // TODO: double-check on necessity of two spaces before `instructions[instructionAddress]`
+    return instructionList.indices.map { index in
+      let instruction = instructionList[index]
+
+      if let instructionAddress = instruction.instructionAddress {
+        return "[\(index.rawValue)] \(instruction)  \(instructionList[instructionAddress])"
+      } else {
+        return "[\(index.rawValue)] \(instruction)"
+      }
+    }
   }
 }
 
