@@ -60,18 +60,21 @@ extension JSONValue {
             }
             bytes.append(UInt8(ascii: "]"))
         case .object(let dict):
-            var iterator = dict.makeIterator()
+            let keys = dict.keys.sorted()
+
             bytes.append(UInt8(ascii: "{"))
-            if let (key, value) = iterator.next() {
+            if let key = keys.first, let value = dict[key] {
                 self.encodeString(key, to: &bytes)
                 bytes.append(UInt8(ascii: ":"))
                 value.appendBytes(to: &bytes)
             }
-            while let (key, value) = iterator.next() {
-                bytes.append(UInt8(ascii: ","))
-                self.encodeString(key, to: &bytes)
-                bytes.append(UInt8(ascii: ":"))
-                value.appendBytes(to: &bytes)
+            keys.dropFirst().forEach { key in
+                if let value = dict[key] {
+                    bytes.append(UInt8(ascii: ","))
+                    self.encodeString(key, to: &bytes)
+                    bytes.append(UInt8(ascii: ":"))
+                    value.appendBytes(to: &bytes)
+                }
             }
             bytes.append(UInt8(ascii: "}"))
         }
