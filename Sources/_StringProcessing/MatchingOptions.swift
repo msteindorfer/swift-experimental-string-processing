@@ -30,6 +30,8 @@ struct MatchingOptions {
 
 extension MatchingOptions: Codable {}
 
+extension MatchingOptions: Equatable {}
+
 // MARK: Compilation API
 extension MatchingOptions {
   /// Creates an instance with the default options.

@@ -167,6 +167,8 @@ extension MEProgram {
 
 extension MEProgram.RegisterInfo: Codable {}
 
+extension MEProgram.RegisterInfo: Equatable {}
+
 extension Processor.Registers: CustomStringConvertible {
   var description: String {
     func formatRegisters<T>(
