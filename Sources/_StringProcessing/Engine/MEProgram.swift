@@ -64,20 +64,50 @@ extension MEProgram: CustomStringConvertible {
   }
 }
 
+@available(macOS 11.0, *)
 extension MEProgram: Encodable {
   public func encode(to encoder: Encoder) throws {
     var container = encoder.container(keyedBy: CodingKeys.self)
-    // TODO: prefer `instructions.rawValue` instead of phantom type wrapper
-    try container.encode(instructions, forKey: .instructions)
-    try container.encode(staticElements, forKey: .staticElements)
-    try container.encode(staticSequences, forKey: .staticSequences)
-    try container.encode(staticBitsets, forKey: .staticBitsets)
-    try container.encode(registerInfo, forKey: .registerInfo)
-    try container.encode(enableTracing, forKey: .enableTracing)
-    try container.encode(enableMetrics, forKey: .enableMetrics)
-    try container.encode(captureList, forKey: .captureList)
-    try container.encode(referencedCaptureOffsets, forKey: .referencedCaptureOffsets)
-    try container.encode(initialOptions, forKey: .initialOptions)
+
+    if !instructions.rawValue.isEmpty {
+      try container.encode(instructions.rawValue, forKey: .instructions)
+    }
+
+    if !staticElements.isEmpty {
+      try container.encode(staticElements, forKey: .staticElements)
+    }
+
+    if !staticSequences.isEmpty {
+      try container.encode(staticSequences, forKey: .staticSequences)
+    }
+
+    if !staticBitsets.isEmpty {
+      try container.encode(staticBitsets, forKey: .staticBitsets)
+    }
+
+    if registerInfo != RegisterInfo(captures: 1) {
+      try container.encode(registerInfo, forKey: .registerInfo)
+    }
+
+    if enableTracing {
+      try container.encode(enableTracing, forKey: .enableTracing)
+    }
+
+    if enableTracing {
+      try container.encode(enableMetrics, forKey: .enableMetrics)
+    }
+
+    if captureList.captures != [.init(optionalDepth: 0, .fake)] {
+      try container.encode(captureList.captures, forKey: .captureList)
+    }
+
+    if !referencedCaptureOffsets.isEmpty {
+      try container.encode(referencedCaptureOffsets, forKey: .referencedCaptureOffsets)
+    }
+
+    if initialOptions != MatchingOptions() {
+      try container.encode(initialOptions, forKey: .initialOptions)
+    }
 
     if !staticConsumeFunctions.isEmpty {
       throw EncodingError.invalidValue(staticConsumeFunctions, EncodingError.Context(
@@ -118,36 +148,88 @@ extension MEProgram: Encodable {
   }
 }
 
+@available(macOS 11.0, *)
 extension MEProgram: Decodable {
   init(from decoder: Decoder) throws {
     let values = try decoder.container(keyedBy: CodingKeys.self)
-    // TODO: prefer `instructions.rawValue` instead of phantom type wrapper
-    instructions = try values.decode(type(of: instructions), forKey: .instructions)
-    staticElements = try values.decode(type(of: staticElements), forKey: .staticElements)
-    staticSequences = try values.decode(type(of: staticSequences), forKey: .staticSequences)
-    staticBitsets = try values.decode(type(of: staticBitsets), forKey: .staticBitsets)
-    let __registerInfo = try values.decode(type(of: registerInfo), forKey: .registerInfo)
-    registerInfo = __registerInfo
-    enableTracing = try values.decode(type(of: enableTracing), forKey: .enableTracing)
-    enableMetrics = try values.decode(type(of: enableMetrics), forKey: .enableMetrics)
-    captureList = try values.decode(type(of: captureList), forKey: .captureList)
-    referencedCaptureOffsets = try values.decode(type(of: referencedCaptureOffsets), forKey: .referencedCaptureOffsets)
-    initialOptions = try values.decode(type(of: initialOptions), forKey: .initialOptions)
+
+    if let rawValue = try values.decodeIfPresent(type(of: instructions.rawValue), forKey: .instructions) {
+      instructions = InstructionList(rawValue)
+    } else {
+      instructions = []
+    }
+
+    if let value = try values.decodeIfPresent(type(of: staticElements), forKey: .staticElements) {
+      staticElements = value
+    } else {
+      staticElements = []
+    }
+
+    if let value = try values.decodeIfPresent(type(of: staticSequences), forKey: .staticSequences) {
+      staticSequences = value
+    } else {
+      staticSequences = []
+    }
+
+    if let value = try values.decodeIfPresent(type(of: staticBitsets), forKey: .staticBitsets) {
+      staticBitsets = value
+    } else {
+      staticBitsets = []
+    }
+
+    if let value = try values.decodeIfPresent(type(of: registerInfo), forKey: .registerInfo) {
+      registerInfo = value
+    } else {
+      registerInfo = RegisterInfo(captures: 1)
+    }
+
+    if let value = try values.decodeIfPresent(type(of: enableTracing), forKey: .enableTracing) {
+      enableTracing = value
+    } else {
+      enableTracing = false
+    }
+
+    if let value = try values.decodeIfPresent(type(of: enableMetrics), forKey: .enableMetrics) {
+      enableMetrics = value
+    } else {
+      enableMetrics = false
+    }
+
+    if let rawValue = try values.decodeIfPresent(type(of: captureList.captures), forKey: .captureList) {
+      captureList = CaptureList(rawValue)
+    } else {
+      captureList = CaptureList([.init(optionalDepth: 0, .fake)])
+    }
+
+    if let value = try values.decodeIfPresent(type(of: referencedCaptureOffsets), forKey: .referencedCaptureOffsets) {
+      referencedCaptureOffsets = value
+    } else {
+      referencedCaptureOffsets = [:]
+    }
+
+    if let value = try values.decodeIfPresent(type(of: initialOptions), forKey: .initialOptions) {
+      initialOptions = value
+    } else {
+      initialOptions = MatchingOptions()
+    }
 
     // FIXME: how to inject functions after deserialization?
+    staticConsumeFunctions = []
+    staticTransformFunctions = []
+    staticMatcherFunctions = []
 
     // Emit placeholders throwing fatal error
-    staticConsumeFunctions = (0 ..< __registerInfo.consumeFunctions).map { _ in
+    staticConsumeFunctions = (0 ..< registerInfo.consumeFunctions).map { _ in
       { _, _ in fatalError("Consume function not initialized") }
     }
 
     // Emit placeholders throwing fatal error
-    staticTransformFunctions = (0 ..< __registerInfo.transformFunctions).map { _ in
+    staticTransformFunctions = (0 ..< registerInfo.transformFunctions).map { _ in
       { _, _ in fatalError("Transform function not initialized") }
     }
 
     // Emit placeholders throwing fatal error
-    staticMatcherFunctions = (0 ..< __registerInfo.matcherFunctions).map { _ in
+    staticMatcherFunctions = (0 ..< registerInfo.matcherFunctions).map { _ in
       { _, _, _ in fatalError("Matcher function not initialized") }
     }
   }
