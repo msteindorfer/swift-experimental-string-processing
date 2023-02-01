@@ -100,21 +100,6 @@ public struct Regex<Output>: RegexComponent {
   // Initialize (lowered) program from instruction byte buffer
   // TODO: support generalized transform functions
   // TODO: add instruction verifier
-  public init(instructions: [UInt8], transformers: [(Substring) throws -> String] = []) {
-    assert(instructions.count % 8 == 0)
-
-    let instructions = instructions.withUnsafeBufferPointer { buffer in
-      buffer.withMemoryRebound(to: UInt64.self) { buffer in
-        Array(buffer)
-      }
-    }
-
-    self.program = Program(instructions: instructions, transformers: transformers)
-  }
-
-  // Initialize (lowered) program from instruction byte buffer
-  // TODO: support generalized transform functions
-  // TODO: add instruction verifier
   public init(instructions: [UInt64], transformers: [(Substring) throws -> String] = []) {
     self.program = Program(instructions: instructions, transformers: transformers)
   }

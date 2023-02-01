@@ -193,10 +193,10 @@ class AlgorithmsResultBuilderTests: XCTestCase {
 
   func testMatchesOneOrMoreWordFromInstructionsOnly() throws {
     let regex = Regex<Substring>(instructions: [      // Regex { OneOrMore(.word) }
-      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x15, // > [0] beginCapture 0
-      0x08, 0x00, 0x04, 0x08, 0x20, 0x00, 0x00, 0x14, // > [1] quantify builtin 1 unbounded
-      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x16, // > [2] endCapture 0
-      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x1a, // > [3] accept
+      0x1500000000000000, // > [0] beginCapture 0
+      0x1400002008040008, // > [1] quantify builtin 1 unbounded
+      0x1600000000000000, // > [2] endCapture 0
+      0x1A00000000000000, // > [3] accept
     ])
 
     XCTAssertEqual("abc".wholeMatch(of: regex)!.0, "abc")
@@ -230,13 +230,13 @@ class AlgorithmsResultBuilderTests: XCTestCase {
     // MARK: Embedded Low-Level Matching Engine IR
 
     let regex = Regex<(Substring, String)>(instructions: [
-      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x15, // > [0] beginCapture 0
-      0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x15, // > [1] beginCapture 1
-      0x08, 0x00, 0x04, 0x08, 0x20, 0x00, 0x00, 0x14, // > [2] quantify builtin 1 unbounded
-      0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x16, // > [3] endCapture 1
-      0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x17, // > [4] transformCapture trans[#0](#1)
-      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x16, // > [5] endCapture 0
-      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x1a, // > [6] accept
+      0x1500000000000000, // > [0] beginCapture 0
+      0x1500000000000001, // > [1] beginCapture 1
+      0x1400002008040008, // > [2] quantify builtin 1 unbounded
+      0x1600000000000001, // > [3] endCapture 1
+      0x1700000000000001, // > [4] transformCapture trans[#0](#1)
+      0x1600000000000000, // > [5] endCapture 0
+      0x1A00000000000000, // > [6] accept
     ], transformers: [
       { input in input.uppercased() }
     ])
